@@ -2,6 +2,7 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { getConfig } from "./config.js";
 import { getInteractionResponse } from "./interactions/interactions.js";
+import { gameGuard } from "./utils.js";
 
 const config = getConfig();
 
@@ -12,7 +13,10 @@ client.on(Events.ClientReady, (readyClient) => {
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
+  // goes here to type narrow the interaction to a ChatInputCommandInteraction
   if (!interaction.isChatInputCommand()) return;
+
+  if (!gameGuard(interaction, config)) return;
 
   getInteractionResponse(interaction, config);
 });

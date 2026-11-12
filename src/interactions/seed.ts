@@ -4,10 +4,7 @@ import { isAdmin } from "../utils.js";
 import { db } from "../db/index.js";
 import { itemsTable, punishmentsTable } from "../db/schema.js";
 
-export const handleSeed = async (
-  interaction: ChatInputCommandInteraction,
-  config: Config,
-) => {
+export const handleSeed = async (interaction: ChatInputCommandInteraction, config: Config) => {
   if (!interaction.inCachedGuild()) return;
 
   if (!isAdmin(interaction.member, config)) {
