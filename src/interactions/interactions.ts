@@ -1,8 +1,9 @@
 import { MessageFlags, type ChatInputCommandInteraction } from "discord.js";
 import type { Config } from "../config.js";
-import { hasGameRole } from "../utils.js";
+import { hasGameRole, isAdmin } from "../utils.js";
+import { handleSeed } from "./seed.js";
 
-export const getInteractionResponse = (
+export const getInteractionResponse = async (
   interaction: ChatInputCommandInteraction,
   config: Config,
 ) => {
@@ -18,7 +19,7 @@ export const getInteractionResponse = (
 
   const { member } = interaction;
 
-  if (!hasGameRole(member, config)) {
+  if (!hasGameRole(member, config) && !isAdmin(member, config)) {
     interaction.reply({
       content: "You do not have the required role to use this command.",
       flags: MessageFlags.Ephemeral,
@@ -27,8 +28,8 @@ export const getInteractionResponse = (
   }
 
   switch (interaction.commandName) {
-    case "meow":
-      interaction.reply("Meow!");
+    case "seed":
+      await handleSeed(interaction, config);
       break;
   }
 };

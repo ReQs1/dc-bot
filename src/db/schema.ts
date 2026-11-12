@@ -1,36 +1,59 @@
-import { integer, pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
+import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
-export const usersTable = pgTable("users", {
+export const usersTable = sqliteTable("users", {
   id: text().primaryKey().notNull(),
   points: integer().default(0),
   strikes: integer().default(0),
-  streak: integer().default(0),
+  skips: integer().default(2),
 });
 
-export const itemsTable = pgTable("items", {
-  id: uuid().primaryKey().defaultRandom(),
+// ====== items ======
+
+export const itemsTable = sqliteTable("items", {
+  id: integer().primaryKey({ autoIncrement: true }),
   name: text().unique().notNull(),
+});
+
+export const usersItemsStatusEnum = ["PENDING", "ACCEPTED", "REJECTED", "SKIPPED"] as const;
+
+export const usersItemsTable = sqliteTable("user_items", {
+  id: integer().primaryKey({ autoIncrement: true }),
+  userId: text()
+    .notNull()
+    .references(() => usersTable.id),
+  itemId: integer()
+    .notNull()
+    .references(() => itemsTable.id),
+  status: text({ enum: usersItemsStatusEnum }).default("PENDING").notNull(),
+  content: text(), // ← photo URL from /submit,
+  reviewedBy: text(), // ← Admin Discord ID
+  date: text()
+    .$defaultFn(() => new Date().toISOString().slice(0, 10))
+    .notNull(),
 });
 
 // ====== punishments ======
 
-export const punishmentsTable = pgTable("punishments", {
-  id: uuid().primaryKey().defaultRandom(),
+export const punishmentsTable = sqliteTable("punishments", {
+  id: integer().primaryKey({ autoIncrement: true }),
   name: text().notNull().unique(),
   description: text(),
 });
 
-export const punishmentStatusEnum = pgEnum("punishment_status", ["ACTIVE", "COMPLETED"]);
+export const punishmentStatusEnum = ["ACTIVE", "COMPLETED"] as const;
 
-export const punishmentsUsersTable = pgTable("user_punishments", {
-  id: uuid().primaryKey().defaultRandom(),
-  punishmentId: uuid()
+export const punishmentsUsersTable = sqliteTable("user_punishments", {
+  id: integer().primaryKey({ autoIncrement: true }),
+  punishmentId: integer()
     .notNull()
     .references(() => punishmentsTable.id),
   userId: text()
     .notNull()
     .references(() => usersTable.id),
-  assignedAt: timestamp().defaultNow(),
-  completedAt: timestamp(),
-  status: punishmentStatusEnum(),
+  status: text({ enum: punishmentStatusEnum }).notNull(),
+  strikeNumber: integer().notNull(),
+  assignedAt: integer({ mode: "timestamp" })
+    .$defaultFn(() => new Date())
+    .notNull(),
+  completedAt: integer({ mode: "timestamp" }),
 });
