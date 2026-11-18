@@ -1,6 +1,6 @@
-// Require the necessary discord.js classes
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { getConfig } from "./config.js";
+import { startCron } from "./cron.js";
 import { getInteractionResponse } from "./interactions/interactions.js";
 import { gameGuard } from "./utils.js";
 
@@ -10,10 +10,10 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 
 client.on(Events.ClientReady, (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}!`);
+  startCron(readyClient, config);
 });
 
 client.on(Events.InteractionCreate, async (interaction) => {
-  // goes here to type narrow the interaction to a ChatInputCommandInteraction
   if (!interaction.isChatInputCommand()) return;
 
   if (!gameGuard(interaction, config)) return;

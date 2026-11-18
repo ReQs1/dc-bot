@@ -14,7 +14,13 @@ export const itemsTable = sqliteTable("items", {
   name: text().unique().notNull(),
 });
 
-export const usersItemsStatusEnum = ["PENDING", "ACCEPTED", "REJECTED", "SKIPPED"] as const;
+export const usersItemsStatusEnum = [
+  "PENDING",
+  "COMPLETED",
+  "REJECTED",
+  "SKIPPED",
+  "FAILED",
+] as const;
 
 export const usersItemsTable = sqliteTable("user_items", {
   id: integer().primaryKey({ autoIncrement: true }),

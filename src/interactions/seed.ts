@@ -45,7 +45,7 @@ export const handleSeed = async (interaction: ChatInputCommandInteraction, confi
 
     if (type === "items") {
       const values = lines.map((name) => ({ name }));
-      await db.insert(itemsTable).values(values);
+      await db.insert(itemsTable).values(values).onConflictDoNothing();
     } else {
       const values = lines
         .map((line) => {
@@ -57,7 +57,7 @@ export const handleSeed = async (interaction: ChatInputCommandInteraction, confi
             typeof v.name === "string" && v.name.length > 0,
         );
 
-      await db.insert(punishmentsTable).values(values);
+      await db.insert(punishmentsTable).values(values).onConflictDoNothing();
     }
 
     await interaction.reply({
