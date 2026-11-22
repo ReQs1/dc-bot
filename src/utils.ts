@@ -40,3 +40,7 @@ export function gameGuard(interaction: ChatInputCommandInteraction, config: Conf
 
   return true;
 }
+
+export function getDateString(date: Date): string {
+  return date.toISOString().slice(0, 10);
+}

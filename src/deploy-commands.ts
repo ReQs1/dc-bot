@@ -27,6 +27,16 @@ const guildCommands = [
         )
         .setRequired(true),
     ),
+
+  new SlashCommandBuilder()
+    .setName("submit")
+    .setDescription("Submits a daily item for a review")
+    .addAttachmentOption((option) =>
+      option
+        .setName("daily_image")
+        .setDescription("Image proof for an admin to review")
+        .setRequired(true),
+    ),
 ];
 
 const rest = new REST({ version: "10" }).setToken(config.DISCORD_TOKEN);

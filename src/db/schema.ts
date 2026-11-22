@@ -20,6 +20,7 @@ export const usersItemsStatusEnum = [
   "REJECTED",
   "SKIPPED",
   "FAILED",
+  "SUBMITTED",
 ] as const;
 
 export const usersItemsTable = sqliteTable("user_items", {

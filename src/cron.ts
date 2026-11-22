@@ -10,13 +10,10 @@ import {
   usersItemsTable,
   usersTable,
 } from "./db/schema.js";
+import { getDateString } from "./utils.js";
 
 const STRIKE_THRESHOLD = 3;
 const TIMEZONE = "Europe/Warsaw";
-
-function getDateString(date: Date): string {
-  return date.toISOString().slice(0, 10);
-}
 
 export function startCron(client: Client, config: Config) {
   cron.schedule(
