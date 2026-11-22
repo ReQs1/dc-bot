@@ -1,7 +1,7 @@
-import { MessageFlags, type ChatInputCommandInteraction } from "discord.js";
-import { db } from "../db/index.js";
-import { usersItemsTable } from "../db/schema.js";
+import { EmbedBuilder, MessageFlags, type ChatInputCommandInteraction } from "discord.js";
 import { and, eq } from "drizzle-orm";
+import { db } from "../db/index.js";
+import { itemsTable, usersItemsTable } from "../db/schema.js";
 import { getDateString } from "../utils.js";
 
 export const handleSubmit = async (interaction: ChatInputCommandInteraction) => {
@@ -23,20 +23,24 @@ export const handleSubmit = async (interaction: ChatInputCommandInteraction) => 
   const today = getDateString(new Date());
 
   try {
-    const existing = await db
-      .select({ id: usersItemsTable.id, status: usersItemsTable.status })
+    const [todaysItem] = await db
+      .select({
+        id: usersItemsTable.id,
+        status: usersItemsTable.status,
+        name: itemsTable.name,
+      })
       .from(usersItemsTable)
-      .where(and(eq(usersItemsTable.date, today), eq(usersItemsTable.userId, interaction.user.id)));
+      .innerJoin(itemsTable, eq(usersItemsTable.itemId, itemsTable.id))
+      .where(and(eq(usersItemsTable.date, today), eq(usersItemsTable.userId, interaction.user.id)))
+      .limit(1);
 
-    if (existing.length <= 0) {
+    if (!todaysItem) {
       await interaction.reply({
         content: "You don't have an item for today.",
         flags: MessageFlags.Ephemeral,
       });
       return;
     }
-
-    const todaysItem = existing[0]!;
 
     if (todaysItem.status === "SUBMITTED") {
       await interaction.reply({
@@ -54,23 +58,37 @@ export const handleSubmit = async (interaction: ChatInputCommandInteraction) => 
       return;
     }
 
+    await interaction.reply({
+      embeds: [
+        new EmbedBuilder()
+          .setDescription(`Submitted by <@${interaction.user.id}> for ${today}`)
+          .addFields({ name: "Item", value: todaysItem.name })
+          .setImage(attachment.url),
+      ],
+      allowedMentions: { parse: [] },
+    });
+
+    const message = await interaction.fetchReply();
+
     await db
       .update(usersItemsTable)
       .set({
         content: attachment.url,
         status: "SUBMITTED",
+        messageId: message.id,
+        reviewedBy: null,
       })
-      .where(and(eq(usersItemsTable.date, today), eq(usersItemsTable.userId, interaction.user.id)));
-
-    await interaction.reply({
-      content: "Your image has been submitted!",
-      flags: MessageFlags.Ephemeral,
-    });
+      .where(eq(usersItemsTable.id, todaysItem.id));
   } catch (e) {
     console.error(e);
-    await interaction.reply({
+    const errorReply = {
       content: "An error occurred while submitting your image.",
       flags: MessageFlags.Ephemeral,
-    });
+    } as const;
+    if (interaction.replied) {
+      await interaction.followUp(errorReply);
+    } else {
+      await interaction.reply(errorReply);
+    }
   }
 };

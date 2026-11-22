@@ -33,6 +33,7 @@ export const usersItemsTable = sqliteTable("user_items", {
     .references(() => itemsTable.id),
   status: text({ enum: usersItemsStatusEnum }).default("PENDING").notNull(),
   content: text(), // ← photo URL from /submit,
+  messageId: text(),
   reviewedBy: text(), // ← Admin Discord ID
   date: text()
     .$defaultFn(() => new Date().toISOString().slice(0, 10))

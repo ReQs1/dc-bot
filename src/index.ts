@@ -18,7 +18,7 @@ client.on(Events.InteractionCreate, async (interaction) => {
 
   if (!gameGuard(interaction, config)) return;
 
-  getInteractionResponse(interaction, config);
+  await getInteractionResponse(interaction, config);
 });
 
 client.login(config.DISCORD_TOKEN);
