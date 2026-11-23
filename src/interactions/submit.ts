@@ -77,6 +77,7 @@ export const handleSubmit = async (interaction: ChatInputCommandInteraction) => 
         status: "SUBMITTED",
         messageId: message.id,
         reviewedBy: null,
+        cause: null,
       })
       .where(eq(usersItemsTable.id, todaysItem.id));
   } catch (e) {

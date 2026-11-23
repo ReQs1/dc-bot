@@ -2,6 +2,7 @@ import { type ChatInputCommandInteraction } from "discord.js";
 import type { Config } from "../config.js";
 import { handleSeed } from "./seed.js";
 import { handleSubmit } from "./submit.js";
+import { handleReview } from "./review.js";
 
 export const getInteractionResponse = async (
   interaction: ChatInputCommandInteraction,
@@ -13,6 +14,12 @@ export const getInteractionResponse = async (
       break;
     case "submit":
       await handleSubmit(interaction);
+      break;
+    case "approve":
+      await handleReview(interaction, config, "COMPLETED");
+      break;
+    case "reject":
+      await handleReview(interaction, config, "REJECTED");
       break;
   }
 };

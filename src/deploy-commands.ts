@@ -7,6 +7,33 @@ const globalCommands: SlashCommandBuilder[] = [];
 
 const guildCommands = [
   new SlashCommandBuilder()
+    .setName("approve")
+    .setDescription("Approves a user's submission for today (admins only)")
+    .addUserOption((option) =>
+      option
+        .setName("user")
+        .setDescription("The user whose submission to approve")
+        .setRequired(true),
+    ),
+
+  new SlashCommandBuilder()
+    .setName("reject")
+    .setDescription("Rejects a user's submission for today (admins only)")
+    .addUserOption((option) =>
+      option
+        .setName("user")
+        .setDescription("The user whose submission to reject")
+        .setRequired(true),
+    )
+    .addStringOption((option) =>
+      option
+        .setName("cause")
+        .setDescription("The reason for rejecting the submission")
+        .setRequired(true)
+        .setMinLength(1)
+        .setMaxLength(1000),
+    ),
+  new SlashCommandBuilder()
     .setName("seed")
     .setDescription("Seeds the bot with either items or punishments")
     .addStringOption((option) =>

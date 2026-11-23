@@ -35,6 +35,7 @@ export const usersItemsTable = sqliteTable("user_items", {
   content: text(), // ← photo URL from /submit,
   messageId: text(),
   reviewedBy: text(), // ← Admin Discord ID
+  cause: text(),
   date: text()
     .$defaultFn(() => new Date().toISOString().slice(0, 10))
     .notNull(),
