@@ -33,6 +33,7 @@ const guildCommands = [
         .setMinLength(1)
         .setMaxLength(1000),
     ),
+
   new SlashCommandBuilder()
     .setName("seed")
     .setDescription("Seeds the bot with either items or punishments")
@@ -64,6 +65,8 @@ const guildCommands = [
         .setDescription("Image proof for an admin to review")
         .setRequired(true),
     ),
+
+  new SlashCommandBuilder().setName("status").setDescription("Shows status of today's item"),
 ];
 
 const rest = new REST({ version: "10" }).setToken(config.DISCORD_TOKEN);
