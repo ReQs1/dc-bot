@@ -1,5 +1,5 @@
 import { MessageFlags, type ChatInputCommandInteraction } from "discord.js";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import type { Config } from "../config.js";
 import { db } from "../db/index.js";
 import { usersItemsTable } from "../db/schema.js";
@@ -30,7 +30,13 @@ export const handleReview = async (
     const [todaysItem] = await db
       .select()
       .from(usersItemsTable)
-      .where(and(eq(usersItemsTable.date, today), eq(usersItemsTable.userId, user.id)))
+      .where(
+        and(
+          eq(usersItemsTable.date, today),
+          eq(usersItemsTable.userId, user.id),
+          ne(usersItemsTable.status, "SKIPPED"),
+        ),
+      )
       .limit(1);
 
     if (!todaysItem) {

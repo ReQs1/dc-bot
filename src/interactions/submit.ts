@@ -1,5 +1,5 @@
 import { EmbedBuilder, MessageFlags, type ChatInputCommandInteraction } from "discord.js";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { itemsTable, usersItemsTable } from "../db/schema.js";
 import { getDateString } from "../utils.js";
@@ -31,7 +31,13 @@ export const handleSubmit = async (interaction: ChatInputCommandInteraction) => 
       })
       .from(usersItemsTable)
       .innerJoin(itemsTable, eq(usersItemsTable.itemId, itemsTable.id))
-      .where(and(eq(usersItemsTable.date, today), eq(usersItemsTable.userId, interaction.user.id)))
+      .where(
+        and(
+          eq(usersItemsTable.date, today),
+          eq(usersItemsTable.userId, interaction.user.id),
+          ne(usersItemsTable.status, "SKIPPED"),
+        ),
+      )
       .limit(1);
 
     if (!todaysItem) {

@@ -24,7 +24,7 @@ export const getInteractionResponse = async (
       await handleReview(interaction, config, "REJECTED");
       break;
     case "status":
-      await handleStatus(interaction, config);
+      await handleStatus(interaction);
       break;
   }
 };

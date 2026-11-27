@@ -1,7 +1,7 @@
 import { EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { db } from "../db/index.js";
 import { itemsTable, usersItemsTable } from "../db/schema.js";
-import { and, eq } from "drizzle-orm";
+import { and, eq, ne } from "drizzle-orm";
 import { getDateString } from "../utils.js";
 import { statusColor, statusEmoji } from "../constants/status.constants.js";
 
@@ -23,7 +23,13 @@ export const handleStatus = async (interaction: ChatInputCommandInteraction) => 
       })
       .from(usersItemsTable)
       .innerJoin(itemsTable, eq(usersItemsTable.itemId, itemsTable.id))
-      .where(and(eq(usersItemsTable.userId, callerId), eq(usersItemsTable.date, today)))
+      .where(
+        and(
+          eq(usersItemsTable.userId, callerId),
+          eq(usersItemsTable.date, today),
+          ne(usersItemsTable.status, "SKIPPED"),
+        ),
+      )
       .limit(1);
 
     if (!usersTodayEntry) {
