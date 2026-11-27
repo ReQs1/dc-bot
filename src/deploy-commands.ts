@@ -67,6 +67,12 @@ const guildCommands = [
     ),
 
   new SlashCommandBuilder().setName("status").setDescription("Shows status of today's item"),
+
+  new SlashCommandBuilder()
+    .setName("skip")
+    .setDescription(
+      "Skips the current item. Next item can't be current or the same as the previous one (in last 3 days)",
+    ),
 ];
 
 const rest = new REST({ version: "10" }).setToken(config.DISCORD_TOKEN);

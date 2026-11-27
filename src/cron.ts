@@ -1,6 +1,6 @@
 import cron from "node-cron";
 import type { Client } from "discord.js";
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import type { Config } from "./config.js";
 import { db } from "./db/index.js";
 import {
@@ -10,7 +10,7 @@ import {
   usersItemsTable,
   usersTable,
 } from "./db/schema.js";
-import { getDateString } from "./utils.js";
+import { getDateString, rollNewItem } from "./utils.js";
 
 const STRIKE_THRESHOLD = 3;
 const TIMEZONE = "Europe/Warsaw";
@@ -46,6 +46,18 @@ export function startCron(client: Client, config: Config) {
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yesterdayStr = getDateString(yesterday);
+
+      const successfulUsersId = await db
+        .select({ userId: usersItemsTable.userId })
+        .from(usersItemsTable)
+        .where(
+          and(eq(usersItemsTable.date, yesterdayStr), eq(usersItemsTable.status, "COMPLETED")),
+        );
+
+      await db
+        .update(usersTable)
+        .set({ points: sql`${usersTable.points} + 1` })
+        .where(sql`${usersItemsTable.userId} IN (${successfulUsersId.map((u) => u.userId)})`);
 
       const failures = await db
         .select()
@@ -114,30 +126,11 @@ export function startCron(client: Client, config: Config) {
       const rollMessages: string[] = [`**New items for ${today}:**`];
 
       for (const [, member] of players) {
-        const seenIds = new Set(
-          (
-            await db
-              .select({ itemId: usersItemsTable.itemId })
-              .from(usersItemsTable)
-              .where(
-                and(eq(usersItemsTable.userId, member.id), eq(usersItemsTable.status, "COMPLETED")),
-              )
-              .orderBy(desc(usersItemsTable.date))
-              .limit(3)
-          ).map((i) => i.itemId),
-        );
-
-        let item: (typeof allItems)[number];
-        do {
-          item = allItems[Math.floor(Math.random() * allItems.length)]!;
-        } while (seenIds.has(item.id));
-
-        await db.insert(usersItemsTable).values({
-          userId: member.id,
-          itemId: item.id,
-          status: "PENDING",
-          date: today,
-        });
+        const item = await rollNewItem(member.id, allItems, today);
+        if (!item) {
+          console.error(`[cron] No eligible items left for user ${member.id}.`);
+          continue;
+        }
 
         rollMessages.push(`<@${member.id}> -> **${item.name}**`);
       }
